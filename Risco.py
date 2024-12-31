@@ -55,8 +55,6 @@ def calcular_metricas(ticker, start_date, end_date):
         print(f"Erro ao processar o ticker {ticker}: {e}")
         return None
 
-
-
 def adicionar_resultado_ao_historico(ticker, resultados):
     global historico_resultados
 
@@ -137,17 +135,15 @@ def show_results():
             confidence_level = 0.95  # Define o nível de confiança
             
             def calculate_var(returns, portfolio_value, confidence_level):
+                # Cálculo do VaR usando a volatilidade total
                 expected_returns = returns.mean()
-                volatility = returns[returns < 0].std()
-                var = portfolio_value * (expected_returns - volatility * norm.ppf(1 - confidence_level))
-                return var
+                total_volatility = returns.std()  # Usando a volatilidade total
+                var = portfolio_value * (expected_returns - total_volatility * norm.ppf(1 - confidence_level))
+                return var.item()  # Garantir que o valor retornado seja um número simples (não uma Series)
+
             
             var = calculate_var(returns, portfolio_value, confidence_level)
             var_percentage = (var / portfolio_value) * 100
-
-            # Usar iloc[0] para acessar o valor se for um pd.Series
-            var = float(var.iloc[0]) if isinstance(var, pd.Series) else var
-            var_percentage = float(var_percentage.iloc[0]) if isinstance(var_percentage, pd.Series) else var_percentage
 
             resultado_texto = (
                 f"Ticker: {ticker}\n"
@@ -180,8 +176,6 @@ def show_results():
     resultados_df = resultados_df.apply(pd.to_numeric, errors='ignore')
 
     save_to_excel(tickers, resultados_df)  # Salva os resultados no Excel
-
-
 
 
 # Configuração da janela
